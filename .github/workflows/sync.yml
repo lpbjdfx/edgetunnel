@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-    - cron: "0 8 * * 1"   # 每周一 UTC 00:00
+    - cron: "0 0 * * *"   # 每天 UTC 00:00
   workflow_dispatch:
 
 jobs:
@@ -37,21 +37,5 @@ jobs:
               echo "[Error] 合并冲突，请手动 Sync Fork 并解决冲突。"
               exit 1
             fi
-            git push origin main
-          fi
-
-      # 关键：同步完强制把频率改回每周，防止被上游冲掉
-      - name: Keep weekly schedule
-        run: |
-          git config user.name "GH Action - Upstream Sync"
-          git config user.email "action@github.com"
-
-          # 把每天改回每周一
-          sed -i 's/cron: "0 0 \* \* \*"/cron: "0 0 * * 1"/' .github/workflows/sync.yml || true
-          sed -i "s/cron: '0 0 \* \* \*'/cron: '0 0 * * 1'/" .github/workflows/sync.yml || true
-
-          if ! git diff --quiet .github/workflows/sync.yml; then
-            git add .github/workflows/sync.yml
-            git commit -m "chore: keep weekly upstream sync schedule"
             git push origin main
           fi
